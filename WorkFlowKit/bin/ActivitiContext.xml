@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context" 
+	xmlns:tx="http://www.springframework.org/schema/tx"
+	xmlns:aop="http://www.springframework.org/schema/aop"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans	http://www.springframework.org/schema/beans/spring-beans-4.1.xsd
+	http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+	http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd
+	http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd">
+	
+	<bean id="wfSource" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close">
+		<property name="driverClassName" value="${jdbc.wf.driverClassName}"/>
+		<property name="url" value="${jdbc.wf.url}"/>
+		<property name="username" value="${jdbc.wf.username}"/>
+		<property name="password" value="${jdbc.wf.password}"/>
+	</bean>
+	<context:property-placeholder location="jdbc.properties"/>
+	
+	<bean id="wftxManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+		<property name="dataSource" ref="wfSource"/>
+	</bean>
+	<bean id="processEngineConfiguration" class="org.activiti.spring.SpringProcessEngineConfiguration">
+	    <property name="dataSource" ref="wfSource" />
+		<property name="transactionManager" ref="wftxManager" />
+		<property name="databaseSchemaUpdate" value="true" />
+		<property name="jobExecutorActivate" value="false" />
+		<property name="createDiagramOnDeploy" value="false" />
+		<property name="activityFontName" value="宋体"/>
+		<property name="labelFontName" value="宋体"/>
+	</bean>
+	
+	<bean id="processEngine" class="org.activiti.spring.ProcessEngineFactoryBean">
+		<property name="processEngineConfiguration" ref="processEngineConfiguration" />
+	</bean>
+	
+	<bean id="repositoryService" factory-bean="processEngine" factory-method="getRepositoryService" />
+	<bean id="runtimeService" factory-bean="processEngine" factory-method="getRuntimeService" />
+	<bean id="taskService" factory-bean="processEngine" factory-method="getTaskService" />
+	<bean id="historyService" factory-bean="processEngine" factory-method="getHistoryService" />
+	<bean id="managementService" factory-bean="processEngine" factory-method="getManagementService" />
+	<bean id="historyService " factory-bean="processEngine" factory-method="getHistoryService" />
+	
+	<bean id="repositorySvr" class="com.hhz.activiti.impl.RepositorySvr">
+		<property name="repositoryService" ref="repositoryService" />
+	</bean>
+	<bean id="runtimeSvr" class="com.hhz.activiti.impl.RuntimeSvr">
+		<property name="runtimeService" ref="runtimeService" />
+	</bean>
+	<bean id="taskSvr" class="com.hhz.activiti.impl.TaskSvr">
+		<property name="taskService" ref="taskService" />
+	</bean>
+</beans>
